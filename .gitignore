@@ -1,0 +1,5 @@
+node_modules
+*.txt
+dist
+!dist/index.html
+.DS_Store
