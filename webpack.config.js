@@ -5,8 +5,8 @@ module.exports = {
   entry: './src/index.js',
   mode: 'development',
   output: {
-    filename: './dist/bundle.js',
-    path: path.resolve(__dirname, 'dist')
+    filename: 'bundle.js',
+    path: path.resolve(__dirname, 'docs')
   },
   module: {
     rules: [
@@ -25,11 +25,11 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: './dist/index.html'
+      template: './docs/index.html'
     })
   ],
   devServer: {
-    static: path.join(__dirname, 'dist'),
+    static: path.join(__dirname, 'docs'),
     compress: true,
     port: 9000
   }
