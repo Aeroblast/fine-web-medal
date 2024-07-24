@@ -16,6 +16,6 @@ void main(void) {
     float y = aVertexPosition.y * uInverseRadius;
     vTextureCoord = vec2(
         x * 0.5 + 0.5,
-        -y * 0.5 + 0.5
+        y * 0.5 + 0.5
     );
 }
