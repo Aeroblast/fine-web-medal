@@ -62,6 +62,8 @@ export function stopLoop() {
 export function showMedal(gl, obj, setLoop = true, mode = 0) {
     loop = setLoop;
     let then = 0;
+    rotationAngle = 0;
+    rotationVelocity = 0;
     function update(now) {
         const deltaTime = now - then; //ms
         then = now;

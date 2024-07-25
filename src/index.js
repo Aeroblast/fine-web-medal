@@ -11,10 +11,14 @@ import fragSrc_plane from './shaders/plane.frag.glsl'
 import vertSrc_plane from './shaders/plane.vert.glsl'
 
 import { initShowMedal, showMedal } from './showMedal'
+import { previewOnclick, closeDialog } from './interact'
 
 
-
-let canvas;
+let dialog;
+let canvas; //assume dialog>canvas
+let styleTag;
+let nameTag;
+let descTag;
 /** @type WebGLRenderingContext */
 let gl;
 let settings;
@@ -25,8 +29,11 @@ let createMedal;
 
 export async function init(_settings) {
     settings = _settings;
-
+    dialog = document.querySelector(settings.dialog_selector);
     canvas = document.querySelector(settings.canvas_selector);
+    styleTag = document.querySelector(settings.style_selector);
+    nameTag = document.querySelector(settings.name_selector);
+    descTag = document.querySelector(settings.desc_selector);
 
     gl = initWebGL(canvas);
     if (!gl) {
@@ -79,15 +86,23 @@ export async function init(_settings) {
         if (param.texture) {
             texture = await getTexture(param.texture);// get by name
         }
+        let obj;
         switch (param.type) {
             case "basic":
-                return createMedal_basic(texture, param.baseColor);
+                obj = createMedal_basic(texture, param.baseColor);
         }
+        obj.name = param.name;
+        obj.desc = param.desc;
+        return obj
     }
     initShowMedal(canvas, gl);
+    dialog.className = "idle";
+    dialog.querySelector("button").onclick = () => closeDialog(dialog);
 }
 
 export async function getPreviews(selector, id_list) {
+    dialog.className = "init";
+    await nextFrame();
     const div = document.querySelector(selector);
     div.innerHTML = "";
     for (const id of id_list) {
@@ -96,7 +111,7 @@ export async function getPreviews(selector, id_list) {
             medals[id] = await createMedal(settings.medals[id]);
             obj = medals[id];
         }
-        console.log(obj)
+        //console.log(obj)
         let preview = obj.preview
         if (!preview) {
             showMedal(gl, obj, false, 0);
@@ -107,17 +122,24 @@ export async function getPreviews(selector, id_list) {
 
         const container = document.createElement("div");
         container.setAttribute("data-id", id);
+        container.title = obj.name;
         let img = new Image()
         img.src = preview;
         container.appendChild(img);
+        container.addEventListener("click",
+            () => {
+                previewOnclick(container,
+                    dialog, settings.dialog_selector, styleTag, () => {
+                        showMedal(gl, obj, true, 2);
+                        nameTag.innerHTML = obj.name;
+                        descTag.innerHTML = obj.desc;
+                    });
+            }
+        );
         div.appendChild(container);
     }
+    dialog.className = "idle";
 }
-export async function showById(id) {
-
-}
-
-
 
 async function loadImage(src) {
     return new Promise((resolve, reject) => {

@@ -1,4 +1,4 @@
-
+import { stopLoop } from './showMedal'
 
 function getCursorPosition(canvas, event) {
     const rect = canvas.getBoundingClientRect()
@@ -9,8 +9,7 @@ function getCursorPosition(canvas, event) {
     return { x, y, w, h };
 }
 
-const lostTime = 0.5 * 1000;// ms
-const chargeMaxTime = 1 * 1000;
+
 export function initInteractiveCanvas(canvas, onRelease) {
     let startStamp = 0;
     let pos = null;
@@ -35,8 +34,6 @@ export function initInteractiveCanvas(canvas, onRelease) {
         pos = getCursorPosition(canvas, e.touches[0]);
         startStamp = performance.now();
         started = true;
-
-
     })
     canvas.addEventListener('mouseup', function (e) {
         if (touch) { return; }
@@ -59,5 +56,55 @@ export function initInteractiveCanvas(canvas, onRelease) {
         started = false;
         touch = false;
     })
-    
+
+}
+
+let lastElement = null;
+
+export function previewOnclick(el, dialog, dialogSelector, styleTag, callback) {
+    if (lastElement) { return }
+    lastElement = el;
+    el.className = "hide";
+    const rect = el.getBoundingClientRect();
+    const screenW = window.innerWidth;
+    const screenH = window.innerHeight;
+
+    const triggerCenterX = rect.left + rect.width / 2;
+    const triggerCenterY = rect.top + rect.height / 2;
+
+
+    dialog.className = 'show_trans';
+
+    const css = `
+    ${dialogSelector}.show_trans {
+        opacity: 0;
+        transform: translate(-50%, 0) scale(0);
+        top: 40px;
+        left: ${triggerCenterX}px;
+     }
+  
+    ${dialogSelector}.show {
+        opacity: 1;
+        transform: translate(-50%, 0) scale(1);
+        top: 10px;
+        left: ${screenW / 2}px;
+    }`
+
+    styleTag.innerHTML = css;
+
+    requestAnimationFrame(() => {
+        dialog.className = 'show';
+        callback();
+    });
+
+}
+
+export function closeDialog(dialog) {
+    dialog.className = 'show_trans';
+    lastElement.className = "";
+    lastElement = null;
+    stopLoop();
+    setTimeout(() => {
+        dialog.className = 'idle';
+    }, 500); // Match the transition duration
 }

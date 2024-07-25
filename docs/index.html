@@ -7,12 +7,6 @@
     <title>Medal Test</title>
     <script src="fine-medal.js"></script>
     <style>
-        .user_badge>img {
-            height: 100%;
-            width: 100%;
-            object-fit: contain;
-        }
-
         #badge-show {
             position: fixed;
             z-index: 500;
@@ -24,6 +18,14 @@
             text-align: center;
             transition: transform 0.5s, top 0.5s, left 0.5s, opacity 0.5s;
             z-index: 100;
+        }
+
+        #badge-show.init {
+            opacity: 0;
+        }
+
+        #badge-show.idle {
+            display: none;
         }
 
         #badge-show>canvas {
@@ -50,6 +52,12 @@
             display: inline-block;
             width: 4em;
             height: 4em;
+            opacity: 1;
+            transition: opacity 0.5s;
+        }
+
+        #user-badges>div.hide {
+            opacity: 0;
         }
 
         #user-badges>div>img {
@@ -83,7 +91,7 @@
     <p>test</p>
     <p>test</p>
 
-    <div id="badge-show">
+    <div id="badge-show" class="init">
         <canvas width="512" height="512" style="max-width: 100%;">
 
         </canvas>
@@ -104,18 +112,23 @@
     <script>
 
         const badges = {
-            1: { texture: "test", baseColor: [0.1, 0.8, 0.3], type: "basic", name: "测试徽章", desc: "这是测试的<b>描述</b>。" },
+            1: { texture: "test", baseColor: [0.1, 0.8, 0.3], type: "basic", name: "测试徽章1", desc: "这是测试的<b>描述1</b>。" },
             2: { texture: "test", baseColor: [0.9, 0.2, 0.1], type: "basic", name: "测试徽章2", desc: "这是测试的<b>描述</b>2。" }
         }
         window.addEventListener("load", async () => {
-            window.fineMedal.init({
+            const fineMedal = window.fineMedal;
+            fineMedal.init({
                 texturePath: "./",
                 textureExt: ".jpg",
                 medals: badges,
-                canvas_selector: "#badge-show>canvas"
+                canvas_selector: "#badge-show>canvas",
+                dialog_selector: "#badge-show",
+                style_selector: "#badge-show-trans",
+                name_selector: "#badge-name",
+                desc_selector: "#badge-desc"
             });
-
-            window.fineMedal.getPreviews("#user-badges", [1, 2])
+            // 创建徽章小图
+            fineMedal.getPreviews("#user-badges", [1, 2])
         });
 
     </script>
