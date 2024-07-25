@@ -1,7 +1,7 @@
 import { mat3, mat4 } from 'gl-matrix'
 
 export function initWebGL(canvas) {
-    const gl = canvas.getContext('webgl2',{preserveDrawingBuffer: true});
+    const gl = canvas.getContext('webgl2');
     if (!gl) {
         alert('Unable to initialize WebGL. Your browser may not support it.');
         return null;
@@ -131,7 +131,7 @@ export function drawScene(gl, projectionMatrix, objects, deltaTime) {
 
             for (const ext_name in part.programInfo.uniformLocations_ext) {
                 const ext = part.programInfo.uniformLocations_ext[ext_name]
-                const x = part[ext_name]; 
+                const x = part[ext_name];
                 gl[x.func](
                     ext,
                     x.v
