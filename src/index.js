@@ -13,8 +13,6 @@ import vertSrc_plane from './shaders/plane.vert.glsl'
 import { initShowMedal, showMedal } from './showMedal'
 
 
-const obj_base_pos = [-0.0, 0.0, -3.0];
-
 
 let canvas;
 /** @type WebGLRenderingContext */
@@ -57,7 +55,6 @@ export async function init(_settings) {
     setGLBuffers(gl, geo_MedalInner);
     function createMedal_basic(texture, baseColor) {
         const modelViewMatrix = mat4.create()
-        mat4.translate(modelViewMatrix, modelViewMatrix, obj_base_pos);
         return {
             view: modelViewMatrix,
             parts: [
@@ -90,7 +87,8 @@ export async function init(_settings) {
     initShowMedal(canvas, gl);
 }
 
-export async function getPreviews(div, id_list) {
+export async function getPreviews(selector, id_list) {
+    const div = document.querySelector(selector);
     div.innerHTML = "";
     for (const id of id_list) {
         let obj = medals[id];
@@ -108,6 +106,7 @@ export async function getPreviews(div, id_list) {
         }
 
         const container = document.createElement("div");
+        container.setAttribute("data-id", id);
         let img = new Image()
         img.src = preview;
         container.appendChild(img);

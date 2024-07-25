@@ -3,7 +3,7 @@ import { initInteractiveCanvas } from './interact'
 import { drawScene } from './basicGL'
 
 
-const obj_base_pos = [-0.0, 0.0, -3.0];
+const obj_base_pos = [-0.0, 0.0, -2.7];
 const projectionMatrix = mat4.create();
 const zNear = 0.1;
 const zFar = 100.0;
