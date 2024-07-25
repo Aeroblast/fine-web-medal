@@ -49,7 +49,7 @@ function paramMetal() {
     const seg_edge = 32;
     const radius = 1;
     const edge_count = Math.floor(seg_edge * 4 / 3);//不止半圆，往回卷一点
-    const radius_inner = 0.9;//除去圆边的半径
+    const radius_inner = 0.93;//除去圆边的半径
     const radius_edge = radius - radius_inner;
     return {
         seg_cirle,
