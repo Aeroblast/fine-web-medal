@@ -6,7 +6,7 @@ void main(void) {
     highp float shininess = 32.0;
           
     //gl_FragColor = texture2D(uSampler, vTextureCoord)
-    highp vec3 lightDir = normalize(vPosition - vec3(0, 0, 2));
+    highp vec3 lightDir = normalize(vPosition - vec3(3, 0, 4));
     highp vec3 viewDir = normalize(vec3(0.0, -0.0, -1));
     highp vec3 reflectDir = reflect(-lightDir, vTransformedNormal);
     highp float specular = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
