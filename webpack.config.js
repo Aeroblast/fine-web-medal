@@ -23,11 +23,7 @@ module.exports = {
       },
     ]
   },
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: './docs/index.html'
-    })
-  ],
+  plugins: [],
   devServer: {
     static: path.join(__dirname, 'docs'),
     compress: true,

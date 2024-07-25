@@ -1,1 +1,95 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Medal Test</title><script defer="defer" src="bundle.js"></script><script defer="defer" src="bundle.js"></script></head><body><canvas width="1000" height="1000" style="width: 100%;"></canvas></body></html>
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Medal Test</title>
+    <script defer="defer" src="bundle.js"></script>
+    <style>
+        .user_badge {
+            display: inline-block;
+            height: 80px;
+            width: 80px;
+            margin: 10px;
+            cursor: pointer;
+            border-radius: 50%;
+            background: white;
+            overflow: hidden;
+        }
+
+        .user_badge>img {
+            height: 100%;
+            width: 100%;
+            object-fit: contain;
+        }
+
+        #badge-show {
+            position: fixed;
+            z-index: 500;
+            top: 0;
+            left: 50%;
+            transform: translate(-50%, 0);
+            width: 20em;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        #badge-show>canvas {
+            display: inline-block;
+        }
+
+        #badge-info {
+            background: #000000c0;
+            border-radius: 0.5em;
+            padding: 1em;
+            color: rgb(207, 207, 207);
+            text-align: center;
+        }
+
+        #badge-name {
+            font-weight: bold;
+
+        }
+    </style>
+
+</head>
+
+<body>
+    <p>test</p>
+    <p>test</p>
+    <p>test</p>
+    <p>test</p>
+    <p>test</p>
+    <p>test</p>
+    <p>test</p>
+    <p>test</p>
+    <div id="user-badges"></div>
+    <p>test</p>
+    <p>test</p>
+    <p>test</p>
+    <p>test</p>
+    <p>test</p>
+    <p>test</p>
+    <p>test</p>
+    <p>test</p>
+    <p>test</p>
+    <p>test</p>
+    <p>test</p>
+    <p>test</p>
+
+    <div id="badge-show">
+        <canvas width="512" height="512" style="max-width: 100%;">
+
+        </canvas>
+
+        <div id="badge-info">
+            <span id="badge-name">name</span><br>
+            <span id="badge-desc">这是说明</span>
+
+        </div>
+        <button>Close</button>
+    </div>
+</body>
+
+</html>
