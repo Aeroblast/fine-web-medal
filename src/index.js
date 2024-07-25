@@ -10,53 +10,30 @@ import vertSrc_basic from './shaders/basic.vert.glsl'
 import fragSrc_plane from './shaders/plane.frag.glsl'
 import vertSrc_plane from './shaders/plane.vert.glsl'
 
-import { initInteractiveCanvas } from './interact'
+import { initShowMedal, showMedal } from './showMedal'
 
-const canvas_selector = "#badge-show>canvas";
 
 const obj_base_pos = [-0.0, 0.0, -3.0];
 
 
-const texture_names = ["test"]
+let canvas;
+/** @type WebGLRenderingContext */
+let gl;
+let settings;
+const textures = {};//access by name
+const medals = {};//access by id
+let createMedal;
 
-async function main() {
 
-    const canvas = document.querySelector(canvas_selector);
+export async function init(_settings) {
+    settings = _settings;
 
-    /** @type WebGLRenderingContext */
-    const gl = initWebGL(canvas);
+    canvas = document.querySelector(settings.canvas_selector);
+
+    gl = initWebGL(canvas);
     if (!gl) {
         return;
     }
-    const texture_loads = texture_names.map(async name => {
-        const img = await loadImage(name + ".jpg");
-        return { img, name }
-    });
-    const texture_infos = await Promise.all(texture_loads);
-
-    const textures = {};
-    texture_infos.forEach(info => {
-        const texture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        const level = 0;
-        const internalFormat = gl.RGB;
-        const srcFormat = gl.RGB;
-        const srcType = gl.UNSIGNED_BYTE;
-
-        gl.texImage2D(
-            gl.TEXTURE_2D,
-            level,
-            internalFormat,
-            srcFormat,
-            srcType,
-            info.img,
-        );
-        gl.generateMipmap(gl.TEXTURE_2D);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-
-        textures[info.name] = texture;
-    });
-
     const shadarProgram_basic = initShaderProgram(gl, vertSrc_basic, fragSrc_basic);
     const programInfo_basic = getLocation(gl,
         shadarProgram_basic,
@@ -73,12 +50,12 @@ async function main() {
         "uInverseRadius"
     );
 
-    // to-do公用几何图形
+    // 公用几何图形
     const geo_MedalOuter = createMedalOuter();//外环+背面
     const geo_MedalInner = createMedalInner();//贴图处
     setGLBuffers(gl, geo_MedalOuter);
     setGLBuffers(gl, geo_MedalInner);
-    function createMetal() {
+    function createMedal_basic(texture, baseColor) {
         const modelViewMatrix = mat4.create()
         mat4.translate(modelViewMatrix, modelViewMatrix, obj_base_pos);
         return {
@@ -87,12 +64,12 @@ async function main() {
                 {
                     programInfo: programInfo_basic,
                     geomertry: geo_MedalOuter,
-                    uBaseColor: { func: "uniform3fv", v: [0.3, 0.7, 0] }
+                    uBaseColor: { func: "uniform3fv", v: baseColor }
                 },
                 {
                     programInfo: programInfo_plane,
                     geomertry: geo_MedalInner,
-                    texture: textures["test"],
+                    texture: texture,
                     uInverseRadius: { func: "uniform1f", v: 1 / geo_MedalInner.vertex[0] }
                 }
             ]
@@ -100,79 +77,46 @@ async function main() {
     }
 
 
-    const objects = [
-        createMetal()
-    ];
-    console.log(objects)
-
-    // Fixed camera
-    const projectionMatrix = mat4.create();
-    const fieldOfView = 45 * Math.PI / 180;
-    const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-    const zNear = 0.1;
-    const zFar = 100.0;
-    mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
-
-
-    const PI2 = Math.PI * 2;
-    const freeZone = 5 * Math.PI / 180;
-    const freeZoneDamping = 0.9;
-    const freeZoneRandomRate = 0.0001;
-    const pullBack = 0.00002;
-    let rotationAngle = 0;
-    let rotationVelocity = 0;
-    let then = 0;
-    function onRelease(pos, delta) {
-        const { x, y, w, h } = pos;
-        let r = x - w / 2;
-        let f = r * Math.min(delta, 800) * 0.001 * 0.001;
-        rotationVelocity += f;
-        //console.log(rotationVelocity)
-    }
-    initInteractiveCanvas(canvas, onRelease);
-    function update(now) {
-        const deltaTime = now - then; //ms
-        then = now;
-        //rotationAngle += deltaTime * 0.0009; //调试用： 匀速转动
-
-        rotationAngle += deltaTime * rotationVelocity;
-        if (rotationAngle > PI2) { rotationAngle -= PI2; }
-        if (rotationAngle < 0) { rotationAngle += PI2; }
-        if (rotationAngle < Math.PI) {
-            if (rotationAngle < freeZone) {
-                rotationVelocity *= freeZoneDamping;
-                rotationVelocity += (Math.random() - 0.5) * freeZoneRandomRate;
-            } else {
-                rotationVelocity -= pullBack * (rotationAngle - freeZone) * deltaTime;
-            }
-
-        } else {
-            if (PI2 - rotationAngle < freeZone) {
-                rotationVelocity *= freeZoneDamping;
-                rotationVelocity += (Math.random() - 0.5) * freeZoneRandomRate;
-            } else {
-                rotationVelocity += pullBack * (PI2 - rotationAngle - freeZone) * deltaTime;
-            }
-
+    createMedal = async function (param) {
+        let texture;
+        if (param.texture) {
+            texture = await getTexture(param.texture);// get by name
         }
-
-
-        const modelViewMatrix = mat4.create();
-        mat4.translate(modelViewMatrix, modelViewMatrix, obj_base_pos);
-
-        mat4.rotateY(modelViewMatrix, modelViewMatrix, rotationAngle);
-        for (const obj of objects) {
-            obj.view = modelViewMatrix;
+        switch (param.type) {
+            case "basic":
+                return createMedal_basic(texture, param.baseColor);
         }
-
-        drawScene(gl, projectionMatrix, objects, deltaTime);
-
-        requestAnimationFrame(update);
     }
-    requestAnimationFrame(update);
+    initShowMedal(canvas, gl);
 }
 
-window.addEventListener('load', main);
+export async function getPreviews(div, id_list) {
+    div.innerHTML = "";
+    for (const id of id_list) {
+        let obj = medals[id];
+        if (!obj) {
+            medals[id] = await createMedal(settings.medals[id]);
+            obj = medals[id];
+        }
+        console.log(obj)
+        let preview = obj.preview
+        if (!preview) {
+            showMedal(gl, obj, false, 0);
+            await nextFrame();
+            obj.preview = await canvasToBlobUrl(canvas);
+            preview = obj.preview;
+        }
+
+        const container = document.createElement("div");
+        let img = new Image()
+        img.src = preview;
+        container.appendChild(img);
+        div.appendChild(container);
+    }
+}
+export async function showById(id) {
+
+}
 
 
 
@@ -183,4 +127,51 @@ async function loadImage(src) {
         img.onerror = reject
         img.src = src
     })
+}
+
+async function getTexture(name) {
+    const t = textures[name];
+    if (t) {
+        return t;
+    }
+    const img = await loadImage(name + settings.textureExt);
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    const level = 0;
+    const internalFormat = gl.RGB;
+    const srcFormat = gl.RGB;
+    const srcType = gl.UNSIGNED_BYTE;
+
+    gl.texImage2D(
+        gl.TEXTURE_2D,
+        level,
+        internalFormat,
+        srcFormat,
+        srcType,
+        img,
+    );
+    gl.generateMipmap(gl.TEXTURE_2D);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+
+    textures[name] = texture;
+    return texture;
+}
+
+async function canvasToBlobUrl(canvas) {
+    return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+            if (blob) {
+                const url = URL.createObjectURL(blob);
+                resolve(url);
+            } else {
+                reject(new Error('Canvas toBlob failed.'));
+            }
+        });
+    });
+}
+
+async function nextFrame() {
+    return new Promise((resolve) => {
+        requestAnimationFrame(resolve);
+    });
 }
