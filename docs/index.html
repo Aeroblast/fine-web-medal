@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Medal Test</title>
-    <script defer="defer" src="bundle.js"></script>
+    <script src="fine-medal.js"></script>
     <style>
         .user_badge {
             display: inline-block;
@@ -51,6 +51,15 @@
             font-weight: bold;
 
         }
+        #user-badges>div{
+            display: inline-block;
+            width: 2em;
+            height: 2em;
+        }
+        #user-badges>div>img{
+           width: 100%;
+           height: auto;
+        }
     </style>
 
 </head>
@@ -90,6 +99,25 @@
         </div>
         <button>Close</button>
     </div>
+    <script>
+
+        const badges = {
+            1: { texture: "test", baseColor: [0.1, 0.8, 0.3], type: "basic", name: "测试徽章", desc: "这是测试的<b>描述</b>。" },
+            2: { texture: "test", baseColor: [0.9, 0.2, 0.1], type: "basic", name: "测试徽章2", desc: "这是测试的<b>描述</b>2。" }
+        }
+        window.addEventListener("load", async () => {
+            window.fineMedal.init({
+                texturePath: "./",
+                textureExt: ".jpg",
+                medals: badges,
+                canvas_selector: "#badge-show>canvas"
+            });
+
+            const c = document.querySelector("#user-badges");
+            window.fineMedal.getPreviews(c, [1, 2])
+        });
+
+    </script>
 </body>
 
 </html>
