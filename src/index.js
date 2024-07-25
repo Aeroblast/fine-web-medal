@@ -10,9 +10,11 @@ import vertSrc_basic from './shaders/basic.vert.glsl'
 import fragSrc_plane from './shaders/plane.frag.glsl'
 import vertSrc_plane from './shaders/plane.vert.glsl'
 
-const canvas_selector = "canvas";
+import { initInteractiveCanvas } from './interact'
 
-const obj_base_pos = [-0.0, 0.0, -6.0];
+const canvas_selector = "#badge-show>canvas";
+
+const obj_base_pos = [-0.0, 0.0, -3.0];
 
 
 const texture_names = ["test"]
@@ -20,6 +22,7 @@ const texture_names = ["test"]
 async function main() {
 
     const canvas = document.querySelector(canvas_selector);
+
     /** @type WebGLRenderingContext */
     const gl = initWebGL(canvas);
     if (!gl) {
@@ -90,7 +93,7 @@ async function main() {
                     programInfo: programInfo_plane,
                     geomertry: geo_MedalInner,
                     texture: textures["test"],
-                    uInverseRadius: { func: "uniform1f", v: 1/geo_MedalInner.vertex[0] }
+                    uInverseRadius: { func: "uniform1f", v: 1 / geo_MedalInner.vertex[0] }
                 }
             ]
         }
@@ -110,13 +113,49 @@ async function main() {
     const zFar = 100.0;
     mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
 
+
+    const PI2 = Math.PI * 2;
+    const freeZone = 5 * Math.PI / 180;
+    const freeZoneDamping = 0.9;
+    const freeZoneRandomRate = 0.0001;
+    const pullBack = 0.00002;
     let rotationAngle = 0;
+    let rotationVelocity = 0;
     let then = 0;
+    function onRelease(pos, delta) {
+        const { x, y, w, h } = pos;
+        let r = x - w / 2;
+        let f = r * Math.min(delta, 800) * 0.001 * 0.001;
+        rotationVelocity += f;
+        //console.log(rotationVelocity)
+    }
+    initInteractiveCanvas(canvas, onRelease);
     function update(now) {
-        now *= 0.001;
-        const deltaTime = now - then;
+        const deltaTime = now - then; //ms
         then = now;
-        rotationAngle += deltaTime * 0.9;
+        //rotationAngle += deltaTime * 0.0009; //调试用： 匀速转动
+
+        rotationAngle += deltaTime * rotationVelocity;
+        if (rotationAngle > PI2) { rotationAngle -= PI2; }
+        if (rotationAngle < 0) { rotationAngle += PI2; }
+        if (rotationAngle < Math.PI) {
+            if (rotationAngle < freeZone) {
+                rotationVelocity *= freeZoneDamping;
+                rotationVelocity += (Math.random() - 0.5) * freeZoneRandomRate;
+            } else {
+                rotationVelocity -= pullBack * (rotationAngle - freeZone) * deltaTime;
+            }
+
+        } else {
+            if (PI2 - rotationAngle < freeZone) {
+                rotationVelocity *= freeZoneDamping;
+                rotationVelocity += (Math.random() - 0.5) * freeZoneRandomRate;
+            } else {
+                rotationVelocity += pullBack * (PI2 - rotationAngle - freeZone) * deltaTime;
+            }
+
+        }
+
 
         const modelViewMatrix = mat4.create();
         mat4.translate(modelViewMatrix, modelViewMatrix, obj_base_pos);
