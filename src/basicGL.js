@@ -1,7 +1,7 @@
 import { mat3, mat4 } from 'gl-matrix'
 
 export function initWebGL(canvas) {
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    const gl = canvas.getContext('webgl2') || canvas.getContext('experimental-webgl');
     if (!gl) {
         alert('Unable to initialize WebGL. Your browser may not support it.');
         return null;
