@@ -8,7 +8,7 @@ module.exports = {
   output: {
     filename: 'fine-medal.js',
     path: path.resolve(__dirname, 'docs'),
-    library:"fineMedal"
+    library: "fineMedal"
   },
   module: {
     rules: [
@@ -30,5 +30,6 @@ module.exports = {
     static: path.join(__dirname, 'docs'),
     compress: true,
     port: 9000
-  }
+  },
+  //devtool: 'source-map'
 };
