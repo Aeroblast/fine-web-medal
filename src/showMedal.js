@@ -67,7 +67,8 @@ export function showMedal(gl, obj, setLoop = true, mode = 0) {
     rotationAngle = 0;
     rotationVelocity = 0;
     function update(now) {
-        const deltaTime = now - then; //ms
+        let deltaTime = now - then; //ms
+        if (deltaTime > 1000 / 10) { deltaTime = 1000 / 30; }
         then = now;
         switch (mode) {
             case 0: { } break;
