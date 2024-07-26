@@ -10,6 +10,7 @@ export function initWebGL(canvas) {
     gl.clearDepth(1.0);
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     //gl.enable(gl.CULL_FACE);
     //gl.cullFace(gl.BACK);
     return gl;
