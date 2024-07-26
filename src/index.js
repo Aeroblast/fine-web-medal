@@ -2,13 +2,19 @@ import { mat4 } from 'gl-matrix'
 
 import { getLocation, initWebGL, initShaderProgram, setGLBuffers, drawScene } from './basicGL'
 
-import { createMedalInner, createMedalOuter } from './createGeometry'
+import { createMedalInner, createMedalOuter, createCirclePlane } from './createGeometry'
 
 import fragSrc_basic from './shaders/basic.frag.glsl'
 import vertSrc_basic from './shaders/basic.vert.glsl'
 
 import fragSrc_plane from './shaders/plane.frag.glsl'
 import vertSrc_plane from './shaders/plane.vert.glsl'
+
+import fragSrc_min from './shaders/min.frag.glsl'
+import vertSrc_min from './shaders/min.vert.glsl'
+
+import fragSrc_minplane from './shaders/minplane.frag.glsl'
+import vertSrc_minplane from './shaders/minplane.vert.glsl'
 
 import { initShowMedal, showMedal } from './showMedal'
 import { previewOnclick, closeDialog } from './interact'
@@ -55,11 +61,31 @@ export async function init(_settings) {
         "uInverseRadius"
     );
 
+    const shadarProgram_min = initShaderProgram(gl, vertSrc_min, fragSrc_min);
+    const programInfo_min = getLocation(gl,
+        shadarProgram_min,
+        "aVertexPosition aVertexNormal",
+        "uModelViewMatrix uProjectionMatrix uNormalMatrix",
+        "uBaseColor"
+    );
+
+    const shadarProgram_minplane = initShaderProgram(gl, vertSrc_minplane, fragSrc_minplane);
+    const programInfo_minplane = getLocation(gl,
+        shadarProgram_minplane,
+        "aVertexPosition aVertexNormal",
+        "uSampler uModelViewMatrix uProjectionMatrix uNormalMatrix",
+        "uInverseRadius"
+    );
+
     // 公用几何图形
     const geo_MedalOuter = createMedalOuter();//外环+背面
     const geo_MedalInner = createMedalInner();//贴图处
+    const geo_MedalOuter_min = createCirclePlane(64, 1, 0);
+    const geo_MedalInner_min = createCirclePlane(64, 0.94, 0.0001);
     setGLBuffers(gl, geo_MedalOuter);
     setGLBuffers(gl, geo_MedalInner);
+    setGLBuffers(gl, geo_MedalOuter_min);
+    setGLBuffers(gl, geo_MedalInner_min);
     function createMedal_basic(texture, baseColor) {
         const modelViewMatrix = mat4.create()
         return {
@@ -79,6 +105,25 @@ export async function init(_settings) {
             ]
         }
     }
+    function createMedal_min(texture, baseColor) {
+        const modelViewMatrix = mat4.create()
+        return {
+            view: modelViewMatrix,
+            parts: [
+                {
+                    programInfo: programInfo_min,
+                    geomertry: geo_MedalOuter_min,
+                    uBaseColor: { func: "uniform3fv", v: baseColor }
+                },
+                {
+                    programInfo: programInfo_minplane,
+                    geomertry: geo_MedalInner_min,
+                    texture: texture,
+                    uInverseRadius: { func: "uniform1f", v: 1 / geo_MedalInner_min.vertex[0] }
+                }
+            ]
+        }
+    }
 
 
     createMedal = async function (param) {
@@ -90,6 +135,10 @@ export async function init(_settings) {
         switch (param.type) {
             case "basic":
                 obj = createMedal_basic(texture, param.baseColor);
+                break;
+            case "min":
+                obj = createMedal_min(texture, param.baseColor);
+                break;
         }
         obj.name = param.name;
         obj.desc = param.desc;

@@ -43,6 +43,43 @@ function helper_edgeNormal(v3_vertex, radius_inner) {
     return normalize(v);
 }
 
+export function createCirclePlane(seg, radius, z = 0) {
+    const circle = helper_createCirclePos(seg, radius, z);
+
+    const vertex_count =
+        seg // 圈
+        + 1 // 底部;
+    const vertex = new Float32Array(vertex_count * 3);
+    const normal = new Float32Array(vertex_count * 3);
+
+    let offset = 0;
+    let n = [0, 0, 1];
+    circle.forEach(v3 => {
+        vertex.set(v3, offset);
+        normal.set(n, offset);
+        offset += 3;
+    });
+
+    vertex.set([0, 0, z], offset);
+    normal.set(n, offset);
+
+    // indice
+    const indices = [];
+    const offset_bottom_p = vertex_count - 1;
+    for (let i = 0; i < seg; i++) {
+        indices.push(
+            i,
+            ((i + 1) % seg),
+            offset_bottom_p
+        );
+    }
+
+    return {
+        vertex: vertex,
+        normal: normal,
+        indices: new Uint16Array(indices)
+    };
+}
 
 function paramMetal() {
     const seg_cirle = 64;
@@ -76,42 +113,9 @@ export function createMedalInner() {
     const z = -radius_edge * Math.cos(angle);
     //console.log(z)
     const delta = radius_edge * Math.sin(angle);
-    const circle = helper_createCirclePos(seg_cirle, radius_inner + delta, z);
 
-
-    const vertex_count =
-        seg_cirle // 圈
-        + 1 // 底部;
-    const vertex = new Float32Array(vertex_count * 3);
-    const normal = new Float32Array(vertex_count * 3);
-
-    let offset = 0;
-    let n = [0, 0, 1];
-    circle.forEach(v3 => {
-        vertex.set(v3, offset);
-        normal.set(n, offset);
-        offset += 3;
-    });
-
-    vertex.set([0, 0, z], offset);
-    normal.set(n, offset);
-
-    // indice
-    const indices = [];
-    const offset_bottom_p = vertex_count - 1;
-    for (let i = 0; i < seg_cirle; i++) {
-        indices.push(
-            i,
-            ((i + 1) % seg_cirle),
-            offset_bottom_p
-        );
-    }
-
-    return {
-        vertex: vertex,
-        normal: normal,
-        indices: new Uint16Array(indices)
-    }
+    const r = createCirclePlane(seg_cirle, radius_inner + delta, z);
+    return r
 }
 export function createMedalOuter() {
     const {
