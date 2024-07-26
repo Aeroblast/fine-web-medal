@@ -204,7 +204,7 @@ async function getTexture(name) {
     if (t) {
         return t;
     }
-    const img = await loadImage(name + settings.textureExt);
+    const img = await loadImage(settings.texturePath + name + settings.textureExt);
     const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
     const level = 0;
