@@ -25,6 +25,7 @@ let canvas; //assume dialog>canvas
 let styleTag;
 let nameTag;
 let descTag;
+let dialogRect;
 /** @type WebGLRenderingContext */
 let gl;
 let settings;
@@ -152,6 +153,7 @@ export async function init(_settings) {
 export async function getPreviews(selector, id_list) {
     dialog.className = "fine-medal_init";
     await nextFrame();
+    dialogRect = dialog.getBoundingClientRect()
     const div = document.querySelector(selector);
     div.innerHTML = "";
 
@@ -184,7 +186,7 @@ export async function getPreviews(selector, id_list) {
         container.addEventListener("click",
             () => {
                 previewOnclick(container,
-                    dialog, settings.dialog_selector, styleTag, () => {
+                    dialog, settings.dialog_selector, dialogRect, styleTag, () => {
                         showMedal(gl, obj, true, 2);
                         nameTag.innerHTML = obj.name;
                         descTag.innerHTML = obj.desc;

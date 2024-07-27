@@ -61,7 +61,7 @@ export function initInteractiveCanvas(canvas, onRelease) {
 
 let lastElement = null;
 
-export function previewOnclick(el, dialog, dialogSelector, styleTag, callback) {
+export function previewOnclick(el, dialog, dialogSelector, dialogRect, styleTag, callback) {
     if (lastElement) { return }
     lastElement = el;
     el.className = "fine-medal_hide";
@@ -78,15 +78,14 @@ export function previewOnclick(el, dialog, dialogSelector, styleTag, callback) {
     const css = `
     ${dialogSelector}.fine-medal_show_trans {
         opacity: 0;
-        transform: translate(-50%, 0) scale(0);
-        top: 40px;
+        transform: translate(-50%, 0) scale(0.1);
+        top: ${triggerCenterY - dialogRect.height / 2}px;
         left: ${triggerCenterX}px;
      }
   
     ${dialogSelector}.fine-medal_show {
         opacity: 1;
         transform: translate(-50%, 0) scale(1);
-        top: 10px;
         left: ${screenW / 2}px;
     }`
 
