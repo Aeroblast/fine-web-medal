@@ -154,12 +154,18 @@ export async function getPreviews(selector, id_list) {
     await nextFrame();
     const div = document.querySelector(selector);
     div.innerHTML = "";
-    for (const id of id_list) {
+
+
+    const objs = await Promise.all(id_list.map(async id => {
         let obj = medals[id];
         if (!obj) {
             medals[id] = await createMedal(settings.medals[id]);
             obj = medals[id];
+            obj.id = id;
         }
+        return obj;
+    }));
+    for (const obj of objs) {
         //console.log(obj)
         let preview = obj.preview
         if (!preview) {
@@ -170,7 +176,7 @@ export async function getPreviews(selector, id_list) {
         }
 
         const container = document.createElement("div");
-        container.setAttribute("data-id", id);
+        container.setAttribute("data-id", obj.id);
         container.title = obj.name;
         let img = new Image()
         img.src = preview;
