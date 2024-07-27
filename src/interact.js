@@ -64,7 +64,7 @@ let lastElement = null;
 export function previewOnclick(el, dialog, dialogSelector, styleTag, callback) {
     if (lastElement) { return }
     lastElement = el;
-    el.className = "hide";
+    el.className = "fine-medal_hide";
     const rect = el.getBoundingClientRect();
     const screenW = window.innerWidth;
     const screenH = window.innerHeight;
@@ -73,17 +73,17 @@ export function previewOnclick(el, dialog, dialogSelector, styleTag, callback) {
     const triggerCenterY = rect.top + rect.height / 2;
 
 
-    dialog.className = 'show_trans';
+    dialog.className = 'fine-medal_show_trans';
 
     const css = `
-    ${dialogSelector}.show_trans {
+    ${dialogSelector}.fine-medal_show_trans {
         opacity: 0;
         transform: translate(-50%, 0) scale(0);
         top: 40px;
         left: ${triggerCenterX}px;
      }
   
-    ${dialogSelector}.show {
+    ${dialogSelector}.fine-medal_show {
         opacity: 1;
         transform: translate(-50%, 0) scale(1);
         top: 10px;
@@ -93,18 +93,18 @@ export function previewOnclick(el, dialog, dialogSelector, styleTag, callback) {
     styleTag.innerHTML = css;
 
     requestAnimationFrame(() => {
-        dialog.className = 'show';
+        dialog.className = 'fine-medal_show';
         callback();
     });
 
 }
 
 export function closeDialog(dialog) {
-    dialog.className = 'show_trans';
+    dialog.className = 'fine-medal_show_trans';
     lastElement.className = "";
     lastElement = null;
     stopLoop();
     setTimeout(() => {
-        dialog.className = 'idle';
+        dialog.className = 'fine-medal_idle';
     }, 500); // Match the transition duration
 }

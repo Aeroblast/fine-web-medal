@@ -145,12 +145,12 @@ export async function init(_settings) {
         return obj
     }
     initShowMedal(canvas, gl);
-    dialog.className = "idle";
+    dialog.className = "fine-medal_idle";
     dialog.querySelector("button").onclick = () => closeDialog(dialog);
 }
 
 export async function getPreviews(selector, id_list) {
-    dialog.className = "init";
+    dialog.className = "fine-medal_init";
     await nextFrame();
     const div = document.querySelector(selector);
     div.innerHTML = "";
@@ -187,7 +187,7 @@ export async function getPreviews(selector, id_list) {
         );
         div.appendChild(container);
     }
-    dialog.className = "idle";
+    dialog.className = "fine-medal_idle";
 }
 
 async function loadImage(src) {
