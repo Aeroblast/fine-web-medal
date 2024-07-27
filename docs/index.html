@@ -32,6 +32,25 @@
             display: inline-block;
         }
 
+        #badge-show>button {
+            position: absolute;
+            top: 0.5em;
+            right: 0.5em;
+            width: 0.99em;
+            height: 0.99em;
+            background-color: #ff5f5f;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            padding: 0;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        #badge-show>button:hover {
+            background-color: #ff1a1a;
+        }
+
         #badge-info {
             background-color: white;
             border: 1px solid #ccc;
@@ -101,9 +120,7 @@
             <span id="badge-desc">这是说明</span>
 
         </div>
-        <div><br>
-            <button>Close</button>
-        </div>
+        <button title="关闭">&times;</button>
     </div>
     <style id="badge-show-trans">
 
