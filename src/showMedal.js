@@ -23,7 +23,7 @@ function onRelease(pos, delta) {
     let ry = y - h / 2;
     if (r * r + ry * ry > w * w / 4 * 0.9) { return; }//在圆外面
     if (delta < 500) {
-        delta = 30;
+        delta = 40;
     }
     let fr = r * Math.min(delta, 800) * 0.001 * 0.001;
     rotationVelocity += fr;
