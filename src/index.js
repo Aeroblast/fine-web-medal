@@ -16,7 +16,7 @@ import vertSrc_min from './shaders/min.vert.glsl'
 import fragSrc_minplane from './shaders/minplane.frag.glsl'
 import vertSrc_minplane from './shaders/minplane.vert.glsl'
 
-import { initShowMedal, showMedal } from './showMedal'
+import { initShowMedal, showMedal, setMode } from './showMedal'
 import { previewOnclick, closeDialog } from './interact'
 
 
@@ -252,4 +252,8 @@ async function nextFrame() {
     return new Promise((resolve) => {
         requestAnimationFrame(resolve);
     });
+}
+
+export function setShowMode(mode) {
+    return setMode(mode);
 }
