@@ -16,6 +16,9 @@ import vertSrc_min from './shaders/min.vert.glsl'
 import fragSrc_minplane from './shaders/minplane.frag.glsl'
 import vertSrc_minplane from './shaders/minplane.vert.glsl'
 
+import fragSrc_reflect from './shaders/reflect.frag.glsl'
+import vertSrc_reflect from './shaders/reflect.vert.glsl'
+
 import { initShowMedal, showMedal, setMode } from './showMedal'
 import { previewOnclick, closeDialog } from './interact'
 
@@ -30,9 +33,10 @@ let dialogRect;
 let gl;
 let settings;
 const textures = {};//access by name
+const cubeTextures = {};//access by name
 const medals = {};//access by id
 let createMedal;
-
+let singleColorTexture;
 
 export async function init(_settings) {
     settings = _settings;
@@ -78,6 +82,14 @@ export async function init(_settings) {
         "uInverseRadius"
     );
 
+    const shadarProgram_reflect = initShaderProgram(gl, vertSrc_reflect, fragSrc_reflect);
+    const programInfo_reflect = getLocation(gl,
+        shadarProgram_reflect,
+        "aVertexPosition aVertexNormal",
+        "uSampler uCubeSampler uModelViewMatrix uProjectionMatrix uNormalMatrix",
+        "uInverseRadius"
+    );
+
     // 公用几何图形
     const geo_MedalOuter = createMedalOuter();//外环+背面
     const geo_MedalInner = createMedalInner();//贴图处
@@ -87,6 +99,12 @@ export async function init(_settings) {
     setGLBuffers(gl, geo_MedalInner);
     setGLBuffers(gl, geo_MedalOuter_min);
     setGLBuffers(gl, geo_MedalInner_min);
+
+    //
+    singleColorTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, singleColorTexture);
+
+
     function createMedal_basic(texture, baseColor) {
         const modelViewMatrix = mat4.create()
         return {
@@ -101,6 +119,28 @@ export async function init(_settings) {
                     programInfo: programInfo_plane,
                     geomertry: geo_MedalInner,
                     texture: texture,
+                    uInverseRadius: { func: "uniform1f", v: 1 / geo_MedalInner.vertex[0] }
+                }
+            ]
+        }
+    }
+    function createMedal_basic_reflect(texture, cubeTexture, baseColor) {
+        const modelViewMatrix = mat4.create()
+        return {
+            view: modelViewMatrix,
+            parts: [
+                {
+                    programInfo: programInfo_reflect,
+                    geomertry: geo_MedalOuter,
+                    texture: getSingleColorTexture(baseColor),
+                    cubeTexture: cubeTexture,
+                    uInverseRadius: { func: "uniform1f", v: 1 }
+                },
+                {
+                    programInfo: programInfo_reflect,
+                    geomertry: geo_MedalInner,
+                    texture: texture,
+                    cubeTexture: cubeTexture,
                     uInverseRadius: { func: "uniform1f", v: 1 / geo_MedalInner.vertex[0] }
                 }
             ]
@@ -129,8 +169,12 @@ export async function init(_settings) {
 
     createMedal = async function (param) {
         let texture;
+        let cubeTexture;
         if (param.texture) {
             texture = await getTexture(param.texture);// get by name
+        }
+        if (param.cubeTexture) {
+            cubeTexture = await getCubeTexture(param.cubeTexture);// get by name
         }
         let obj;
         switch (param.type) {
@@ -140,6 +184,8 @@ export async function init(_settings) {
             case "min":
                 obj = createMedal_min(texture, param.baseColor);
                 break;
+            case "basic_reflect":
+                obj = createMedal_basic_reflect(texture, cubeTexture, param.baseColor);
         }
         obj.name = param.name;
         obj.desc = param.desc;
@@ -198,10 +244,17 @@ export async function getPreviews(selector, id_list) {
     dialog.className = "fine-medal_idle";
 }
 
+const images = {};
 async function loadImage(src) {
+    let r = images[src];
+    if (r) return r;
+
     return new Promise((resolve, reject) => {
         let img = new Image()
-        img.onload = () => resolve(img)
+        img.onload = () => {
+            images[src] = img;
+            resolve(img)
+        }
         img.onerror = reject
         img.src = src
     })
@@ -229,10 +282,80 @@ async function getTexture(name) {
         img,
     );
     gl.generateMipmap(gl.TEXTURE_2D);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
     textures[name] = texture;
     return texture;
+}
+
+
+async function getCubeTexture(name) {
+    const cubeTextureNames = [
+        { target: gl.TEXTURE_CUBE_MAP_POSITIVE_X, n: '-p-x', },
+        { target: gl.TEXTURE_CUBE_MAP_NEGATIVE_X, n: '-n-x', },
+        { target: gl.TEXTURE_CUBE_MAP_POSITIVE_Y, n: '-p-y', },
+        { target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, n: '-n-y', },
+        { target: gl.TEXTURE_CUBE_MAP_POSITIVE_Z, n: '-p-z', },
+        { target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, n: '-n-z', },
+    ];
+    const t = cubeTextures[name];
+    if (t) {
+        return t;
+    }
+    const imgs = await Promise.all(cubeTextureNames.map(async info => {
+        const img = await loadImage(settings.texturePath + name + info.n + settings.textureExt);
+        return {
+            target: info.target,
+            img: img
+        }
+    }));
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+    for (const imgInfo of imgs) {
+        const { target, img } = imgInfo;
+
+        const level = 0;
+        const internalFormat = gl.RGB;
+        const srcFormat = gl.RGB;
+        const srcType = gl.UNSIGNED_BYTE;
+        gl.texImage2D(
+            target,
+            level,
+            internalFormat,
+            srcFormat,
+            srcType,
+            img,
+        );
+    }
+    gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+
+    cubeTextures[name] = texture;
+    return texture;
+}
+
+function getSingleColorTexture(color) {
+    gl.bindTexture(gl.TEXTURE_2D, singleColorTexture);
+
+    const level = 0;
+    const internalFormat = gl.RGB;
+    const width = 1;
+    const height = 1;
+    const border = 0;
+    const srcFormat = gl.RGB;
+    const srcType = gl.UNSIGNED_BYTE;
+    const pixel = new Uint8Array(color.map(v => v * 255)); // opaque blue
+    gl.texImage2D(
+        gl.TEXTURE_2D,
+        level,
+        internalFormat,
+        width,
+        height,
+        border,
+        srcFormat,
+        srcType,
+        pixel,
+    );
+    return singleColorTexture;
 }
 
 async function canvasToBlobUrl(canvas) {

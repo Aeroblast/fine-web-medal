@@ -144,6 +144,12 @@ export function drawScene(gl, projectionMatrix, objects, deltaTime) {
                 gl.bindTexture(gl.TEXTURE_2D, part.texture);
                 gl.uniform1i(part.programInfo.uniformLocations.uSampler, 0);
             }
+            if (part.programInfo.uniformLocations.uCubeSampler !== undefined) {
+                gl.activeTexture(gl.TEXTURE1);
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, part.cubeTexture);
+                gl.uniform1i(part.programInfo.uniformLocations.uCubeSampler, 1);
+            }
+
 
 
             const vertexCount = part.geomertry.indices.length;
