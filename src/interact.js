@@ -101,9 +101,9 @@ export function previewOnclick(el, dialog, dialogSelector, dialogRect, styleTag,
 export function closeDialog(dialog) {
     dialog.className = 'fine-medal_show_trans';
     lastElement.className = "";
-    lastElement = null;
     stopLoop();
     setTimeout(() => {
+        lastElement = null;
         dialog.className = 'fine-medal_idle';
     }, 500); // Match the transition duration
 }
