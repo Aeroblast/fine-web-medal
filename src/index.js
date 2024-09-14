@@ -290,12 +290,12 @@ async function getTexture(name) {
 
 async function getCubeTexture(name) {
     const cubeTextureNames = [
-        { target: gl.TEXTURE_CUBE_MAP_POSITIVE_X, n: '-p-x', },
-        { target: gl.TEXTURE_CUBE_MAP_NEGATIVE_X, n: '-n-x', },
-        { target: gl.TEXTURE_CUBE_MAP_POSITIVE_Y, n: '-p-y', },
-        { target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, n: '-n-y', },
-        { target: gl.TEXTURE_CUBE_MAP_POSITIVE_Z, n: '-p-z', },
-        { target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, n: '-n-z', },
+        { target: gl.TEXTURE_CUBE_MAP_POSITIVE_X, n: '-px', },
+        { target: gl.TEXTURE_CUBE_MAP_NEGATIVE_X, n: '-nx', },
+        { target: gl.TEXTURE_CUBE_MAP_POSITIVE_Y, n: '-py', },
+        { target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, n: '-ny', },
+        { target: gl.TEXTURE_CUBE_MAP_POSITIVE_Z, n: '-pz', },
+        { target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, n: '-nz', },
     ];
     const t = cubeTextures[name];
     if (t) {
