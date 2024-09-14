@@ -94,6 +94,7 @@ function check_onRelease(pos, delta) {
 
 const flick_freeZone = 5 * Math.PI / 180;
 const flick_freeZoneDamping = 0.9;
+const flick_speedOverDamping = 0.8;
 const flick_freeZoneRandomRate = 0.0001;
 const flick_pullBack = 0.000015;
 function flick_update(deltaTime) {
@@ -105,6 +106,7 @@ function flick_update(deltaTime) {
             rotationVelocity *= flick_freeZoneDamping;
             rotationVelocity += (Math.random() - 0.5) * flick_freeZoneRandomRate;
         } else {
+            if (Math.abs(rotationVelocity) > 10) rotationVelocity *= flick_speedOverDamping;
             rotationVelocity -= flick_pullBack * (rotationAngle - flick_freeZone) * deltaTime;
         }
 
