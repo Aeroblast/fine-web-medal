@@ -12,7 +12,7 @@ void main() {
   highp vec3 eyeToSurfaceDir = normalize(vPosition - viewPos);
   highp vec3 direction = reflect(eyeToSurfaceDir, normal);
 
-  highp vec4 env = textureCube(uCubeSampler, direction);
+  highp vec4 env = textureCube(uCubeSampler, -direction);
   highp vec4 baseColor = texture2D(uSampler, vTextureCoord);
-  gl_FragColor = env*0.6 + baseColor*0.4 ;
+  gl_FragColor = env * 0.4 + baseColor * 0.6 ;
 }
