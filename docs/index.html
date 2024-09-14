@@ -89,14 +89,7 @@
 </head>
 
 <body>
-    <p>test</p>
-    <p>test</p>
-    <p>test</p>
-    <p>test</p>
-    <p>test</p>
-    <p>test</p>
-    <p>test</p>
-    <p>test</p>
+    <p id="usage">test</p>
     <div id="user-badges"></div>
     <p>test</p>
     <p>test</p>
@@ -128,6 +121,22 @@
 
     </style>
     <script>
+        const usage = `
+【参数用语】
+Color：长度为3的数组，存储0～1的RGB值。
+Filename：用于请求贴图资源。不包含扩展名和一些后缀（如CubeMap的'-[np][xyz]'方位指示）。
+【参数】
+baseColor {Color}: 底色，徽章外圈和背面。
+texture {Filename/Color}: 主要部分的贴图
+cubeTexture {Filename}: 环境贴图，一组6个，后缀为'-[np][xyz]'，如 filename-nx.jpg 。用于反射效果。
+normalTexture {Filename}: 主要部分的法线贴图。
+【类型(type)】
+min: baseColor, texture 
+basic: baseColor, texture 
+basic_reflect: baseColor, texture, cubeTexture
+basic_reflect_normal: baseColor, texture, cubeTexture, normalTexture
+`.trim();
+        document.querySelector("#usage").innerHTML = usage.split('\n').join("<br>")
         function parseColor(hex) {
             hex = hex.replace('#', '');
             let bigint = parseInt(hex, 16);
@@ -136,9 +145,10 @@
         }
         const badges = {
             1: { texture: "test2", baseColor: [0.1, 0.8, 0.3], type: "basic", name: "测试徽章1", desc: "这是测试的<b>描述1</b>。" },
-            2: { texture: "test", baseColor: [0.9, 0.2, 0.1], type: "basic", name: "测试徽章2", desc: "这是测试的<b>描述</b>2。" },
+            2: { texture: "words-normal.png", baseColor: [0.9, 0.2, 0.1], type: "basic", name: "测试徽章2", desc: "这是测试的<b>描述</b>2。" },
             3: { texture: "test", baseColor: [0.9, 0.2, 0.1], type: "min", name: "测试徽章3", desc: "这是测试的<b>描述</b>3。" },
             4: { name: "测试徽章4", desc: "这是测试的<b>描述</b>4。", type: "basic_reflect", texture: "test", cubeTexture: "room-cube", baseColor: parseColor("#fc9803") },
+            5: { name: "测试徽章5", desc: "这是测试的<b>描述</b>5。", type: "basic_reflect_normal", texture: parseColor("#fc9803"), normalTexture: "words-normal.png", cubeTexture: "room-cube", baseColor: parseColor("#fc9803") },
         }
         window.addEventListener("load", async () => {
             const fineMedal = window.fineMedal;
@@ -153,7 +163,7 @@
                 desc_selector: "#badge-desc"
             });
             // 创建徽章小图
-            fineMedal.getPreviews("#user-badges", [1, 2, 3, 4])
+            fineMedal.getPreviews("#user-badges", [1, 2, 3, 4, 5])
         });
 
     </script>

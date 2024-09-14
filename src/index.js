@@ -18,6 +18,7 @@ import vertSrc_minplane from './shaders/minplane.vert.glsl'
 
 import fragSrc_reflect from './shaders/reflect.frag.glsl'
 import vertSrc_reflect from './shaders/reflect.vert.glsl'
+import fragSrc_reflect_normal from './shaders/reflect_normal.frag.glsl'
 
 import { initShowMedal, showMedal, setMode } from './showMedal'
 import { previewOnclick, closeDialog } from './interact'
@@ -90,6 +91,14 @@ export async function init(_settings) {
         "uInverseRadius"
     );
 
+    const shadarProgram_reflect_normal = initShaderProgram(gl, vertSrc_reflect, fragSrc_reflect_normal);
+    const programInfo_reflect_normal = getLocation(gl,
+        shadarProgram_reflect_normal,
+        "aVertexPosition aVertexNormal",
+        "uSampler uSampler2 uCubeSampler uModelViewMatrix uProjectionMatrix uNormalMatrix",
+        "uInverseRadius"
+    );
+
     // 公用几何图形
     const geo_MedalOuter = createMedalOuter();//外环+背面
     const geo_MedalInner = createMedalInner();//贴图处
@@ -104,16 +113,46 @@ export async function init(_settings) {
     singleColorTexture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, singleColorTexture);
 
-
-    function createMedal_basic(texture, baseColor) {
-        const modelViewMatrix = mat4.create()
+    /** 
+     * @param {Object} param
+     * @param param.baseColor Color
+     * @param param.texture Filename/Color
+     * */
+    async function createMedal_min(param) {
+        const modelViewMatrix = mat4.create();
+        const texture = await getTextureFromType(param.texture);
+        return {
+            view: modelViewMatrix,
+            parts: [
+                {
+                    programInfo: programInfo_min,
+                    geomertry: geo_MedalOuter_min,
+                    uBaseColor: { func: "uniform3fv", v: param.baseColor }
+                },
+                {
+                    programInfo: programInfo_minplane,
+                    geomertry: geo_MedalInner_min,
+                    texture: texture,
+                    uInverseRadius: { func: "uniform1f", v: 1 / geo_MedalInner_min.vertex[0] }
+                }
+            ]
+        }
+    }
+    /** 
+     * @param {Object} param
+     * @param param.baseColor color
+     * @param param.texture filename or color
+     * */
+    async function createMedal_basic(param) {
+        const modelViewMatrix = mat4.create();
+        const texture = await getTextureFromType(param.texture);
         return {
             view: modelViewMatrix,
             parts: [
                 {
                     programInfo: programInfo_basic,
                     geomertry: geo_MedalOuter,
-                    uBaseColor: { func: "uniform3fv", v: baseColor }
+                    uBaseColor: { func: "uniform3fv", v: param.baseColor }
                 },
                 {
                     programInfo: programInfo_plane,
@@ -124,15 +163,23 @@ export async function init(_settings) {
             ]
         }
     }
-    function createMedal_basic_reflect(texture, cubeTexture, baseColor) {
-        const modelViewMatrix = mat4.create()
+    /** 
+     * @param {Object} param
+     * @param param.baseColor color
+     * @param param.texture filename or color
+     * @param param.cubeTexture filename 
+     * */
+    async function createMedal_basic_reflect(param) {
+        const modelViewMatrix = mat4.create();
+        const cubeTexture = await getCubeTexture(param.cubeTexture);// get by name
+        const texture = await getTextureFromType(param.texture);
         return {
             view: modelViewMatrix,
             parts: [
                 {
                     programInfo: programInfo_reflect,
                     geomertry: geo_MedalOuter,
-                    texture: getSingleColorTexture(baseColor),
+                    texture: getSingleColorTexture(param.baseColor),
                     cubeTexture: cubeTexture,
                     uInverseRadius: { func: "uniform1f", v: 1 }
                 },
@@ -146,47 +193,50 @@ export async function init(_settings) {
             ]
         }
     }
-    function createMedal_min(texture, baseColor) {
-        const modelViewMatrix = mat4.create()
+        /** 
+     * @param {Object} param
+     * @param param.baseColor color
+     * @param param.texture filename or color
+     * @param param.cubeTexture filename 
+     * @param param.normalTexture filename 
+     * */
+    async function createMedal_basic_reflect_normal(param) {
+        const modelViewMatrix = mat4.create();
+        const cubeTexture = await getCubeTexture(param.cubeTexture);// get by name
+        const texture = await getTextureFromType(param.texture);
+        const normalTexture = await getTexture(param.normalTexture);
+
         return {
             view: modelViewMatrix,
             parts: [
                 {
-                    programInfo: programInfo_min,
-                    geomertry: geo_MedalOuter_min,
-                    uBaseColor: { func: "uniform3fv", v: baseColor }
+                    programInfo: programInfo_reflect,
+                    geomertry: geo_MedalOuter,
+                    texture: getSingleColorTexture(param.baseColor),
+                    cubeTexture: cubeTexture,
+                    uInverseRadius: { func: "uniform1f", v: 1 }
                 },
                 {
-                    programInfo: programInfo_minplane,
-                    geomertry: geo_MedalInner_min,
+                    programInfo: programInfo_reflect_normal,
+                    geomertry: geo_MedalInner,
                     texture: texture,
-                    uInverseRadius: { func: "uniform1f", v: 1 / geo_MedalInner_min.vertex[0] }
+                    texture2: normalTexture,
+                    cubeTexture: cubeTexture,
+                    uInverseRadius: { func: "uniform1f", v: 1 / geo_MedalInner.vertex[0] }
                 }
             ]
         }
     }
 
-
     createMedal = async function (param) {
-        let texture;
-        let cubeTexture;
-        if (param.texture) {
-            texture = await getTexture(param.texture);// get by name
-        }
-        if (param.cubeTexture) {
-            cubeTexture = await getCubeTexture(param.cubeTexture);// get by name
-        }
-        let obj;
-        switch (param.type) {
-            case "basic":
-                obj = createMedal_basic(texture, param.baseColor);
-                break;
-            case "min":
-                obj = createMedal_min(texture, param.baseColor);
-                break;
-            case "basic_reflect":
-                obj = createMedal_basic_reflect(texture, cubeTexture, param.baseColor);
-        }
+        const func = {
+            "basic": createMedal_basic,
+            "min": createMedal_min,
+            "basic_reflect": createMedal_basic_reflect,
+            "basic_reflect_normal": createMedal_basic_reflect_normal
+        }[param.type];
+        const obj = await func(param);
+
         obj.name = param.name;
         obj.desc = param.desc;
         return obj
@@ -331,6 +381,17 @@ async function getCubeTexture(name) {
 
     cubeTextures[name] = texture;
     return texture;
+}
+
+function getTextureFromType(x) {
+    if (Array.isArray(x)) {
+        // color
+        return getSingleColorTexture(x);
+    }
+
+    if (typeof x === 'string') {
+        return getTexture(x);
+    }
 }
 
 function getSingleColorTexture(color) {
