@@ -22,6 +22,7 @@ import fragSrc_reflect_normal from './shaders/reflect_normal.frag.glsl'
 
 import { initShowMedal, showMedal, setMode } from './showMedal'
 import { previewOnclick, closeDialog } from './interact'
+import { createCubeMapFromSingle } from './cubeMapSource'
 
 
 let dialog;
@@ -337,46 +338,13 @@ async function getTexture(name) {
 
 
 async function getCubeTexture(name) {
-    const cubeTextureNames = [
-        { target: gl.TEXTURE_CUBE_MAP_POSITIVE_X, n: '-px', },
-        { target: gl.TEXTURE_CUBE_MAP_NEGATIVE_X, n: '-nx', },
-        { target: gl.TEXTURE_CUBE_MAP_POSITIVE_Y, n: '-py', },
-        { target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, n: '-ny', },
-        { target: gl.TEXTURE_CUBE_MAP_POSITIVE_Z, n: '-pz', },
-        { target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, n: '-nz', },
-    ];
+
     const t = cubeTextures[name];
     if (t) {
         return t;
     }
-    const imgs = await Promise.all(cubeTextureNames.map(async info => {
-        const img = await loadImage(settings.texturePath + name + info.n + settings.textureExt);
-        return {
-            target: info.target,
-            img: img
-        }
-    }));
-    const texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
-    for (const imgInfo of imgs) {
-        const { target, img } = imgInfo;
-
-        const level = 0;
-        const internalFormat = gl.RGB;
-        const srcFormat = gl.RGB;
-        const srcType = gl.UNSIGNED_BYTE;
-        gl.texImage2D(
-            target,
-            level,
-            internalFormat,
-            srcFormat,
-            srcType,
-            img,
-        );
-    }
-    gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-
+    const img = await loadImage(settings.texturePath + name + settings.textureExt);
+    const texture = await createCubeMapFromSingle(gl, img)
     cubeTextures[name] = texture;
     return texture;
 }
