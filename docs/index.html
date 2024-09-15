@@ -123,7 +123,7 @@
     <script>
         const usage = `
 【参数用语】
-Color：长度为3的数组，存储0～1的RGB值。
+Color：hex形式
 Filename：用于请求贴图资源。不包含扩展名和一些后缀（如CubeMap的'-[np][xyz]'方位指示）。
 【参数】
 baseColor {Color}: 底色，徽章外圈和背面。
@@ -137,18 +137,15 @@ basic_reflect: baseColor, texture, cubeTexture
 basic_reflect_normal: baseColor, texture, cubeTexture, normalTexture
 `.trim();
         document.querySelector("#usage").innerHTML = usage.split('\n').join("<br>")
-        function parseColor(hex) {
-            hex = hex.replace('#', '');
-            let bigint = parseInt(hex, 16);
-            const r = (bigint >> 16) & 255, g = (bigint >> 8) & 255, b = bigint & 255;
-            return [r / 255, g / 255, b / 255];
-        }
+
         const badges = {
-            1: { texture: "test2", baseColor: [0.1, 0.8, 0.3], type: "basic", name: "测试徽章1", desc: "这是测试的<b>描述1</b>。" },
-            2: { texture: "words-normal.png", baseColor: [0.9, 0.2, 0.1], type: "basic", name: "测试徽章2", desc: "这是测试的<b>描述</b>2。" },
-            3: { texture: "test", baseColor: [0.9, 0.2, 0.1], type: "min", name: "测试徽章3", desc: "这是测试的<b>描述</b>3。" },
-            4: { name: "测试徽章4", desc: "这是测试的<b>描述</b>4。", type: "basic_reflect", texture: "test", cubeTexture: "room-cube", baseColor: parseColor("#fc9803") },
-            5: { name: "测试徽章5", desc: "这是测试的<b>描述</b>5。", type: "basic_reflect_normal", texture: parseColor("#fc9803"), normalTexture: "words-normal.png", cubeTexture: "room-cube", baseColor: parseColor("#fc9803") },
+            1: { texture: "test2", baseColor: '#01ee33', type: "basic", name: "测试徽章1", desc: "这是测试的<b>描述1</b>。" },
+            2: { texture: "words-normal.png", baseColor: '#ee2211', type: "basic", name: "测试徽章2", desc: "这是测试的<b>描述</b>2。" },
+            3: { texture: "test", baseColor: '#ee2211', type: "min", name: "测试徽章3", desc: "这是测试的<b>描述</b>3。" },
+            4: { name: "测试徽章4", desc: "这是测试的<b>描述</b>4。", type: "basic_reflect", texture: "test", cubeTexture: "room-cube", baseColor: "#fc9803" },
+            5: { name: "测试徽章5", desc: "这是测试的<b>描述</b>5。", type: "basic_reflect_normal", texture: "#fc9803", normalTexture: "words-normal.png", cubeTexture: "room-cube", baseColor: "#fc9803" },
+            6: { name: "测试徽章6", desc: "这是测试的<b>描述</b>6。", type: "basic_reflect_normal", texture: "#ffffff", normalTexture: "words-normal.png", cubeTexture: "env-cube", baseColor: "#fcb843" },
+  
         }
         window.addEventListener("load", async () => {
             const fineMedal = window.fineMedal;
@@ -163,7 +160,7 @@ basic_reflect_normal: baseColor, texture, cubeTexture, normalTexture
                 desc_selector: "#badge-desc"
             });
             // 创建徽章小图
-            fineMedal.getPreviews("#user-badges", [1, 2, 3, 4, 5])
+            fineMedal.getPreviews("#user-badges", [1, 2, 3, 4, 5, 6])
         });
 
     </script>

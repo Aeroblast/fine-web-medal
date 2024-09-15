@@ -37,7 +37,7 @@ const textures = {};//access by name
 const cubeTextures = {};//access by name
 const medals = {};//access by id
 let createMedal;
-let singleColorTexture;
+let singleColorTextures = {}; // #hex string to gl texture
 
 export async function init(_settings) {
     settings = _settings;
@@ -109,9 +109,7 @@ export async function init(_settings) {
     setGLBuffers(gl, geo_MedalOuter_min);
     setGLBuffers(gl, geo_MedalInner_min);
 
-    //
-    singleColorTexture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, singleColorTexture);
+
 
     /** 
      * @param {Object} param
@@ -127,7 +125,7 @@ export async function init(_settings) {
                 {
                     programInfo: programInfo_min,
                     geomertry: geo_MedalOuter_min,
-                    uBaseColor: { func: "uniform3fv", v: param.baseColor }
+                    uBaseColor: { func: "uniform3fv", v: parseColor(param.baseColor) }
                 },
                 {
                     programInfo: programInfo_minplane,
@@ -152,7 +150,7 @@ export async function init(_settings) {
                 {
                     programInfo: programInfo_basic,
                     geomertry: geo_MedalOuter,
-                    uBaseColor: { func: "uniform3fv", v: param.baseColor }
+                    uBaseColor: { func: "uniform3fv", v: parseColor(param.baseColor) }
                 },
                 {
                     programInfo: programInfo_plane,
@@ -193,13 +191,13 @@ export async function init(_settings) {
             ]
         }
     }
-        /** 
-     * @param {Object} param
-     * @param param.baseColor color
-     * @param param.texture filename or color
-     * @param param.cubeTexture filename 
-     * @param param.normalTexture filename 
-     * */
+    /** 
+ * @param {Object} param
+ * @param param.baseColor color
+ * @param param.texture filename or color
+ * @param param.cubeTexture filename 
+ * @param param.normalTexture filename 
+ * */
     async function createMedal_basic_reflect_normal(param) {
         const modelViewMatrix = mat4.create();
         const cubeTexture = await getCubeTexture(param.cubeTexture);// get by name
@@ -384,7 +382,7 @@ async function getCubeTexture(name) {
 }
 
 function getTextureFromType(x) {
-    if (Array.isArray(x)) {
+    if (/#[0-9a-fA-F]{6}/.test(x)) {
         // color
         return getSingleColorTexture(x);
     }
@@ -394,8 +392,12 @@ function getTextureFromType(x) {
     }
 }
 
-function getSingleColorTexture(color) {
-    gl.bindTexture(gl.TEXTURE_2D, singleColorTexture);
+function getSingleColorTexture(colorName) {
+    let texture = singleColorTextures[colorName];
+    if (texture) return texture;
+    texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    const color = parseColor(colorName);
 
     const level = 0;
     const internalFormat = gl.RGB;
@@ -416,7 +418,15 @@ function getSingleColorTexture(color) {
         srcType,
         pixel,
     );
-    return singleColorTexture;
+    singleColorTextures[colorName] = texture;
+    return texture;
+}
+
+function parseColor(hex) {
+    hex = hex.replace('#', '');
+    let bigint = parseInt(hex, 16);
+    const r = (bigint >> 16) & 255, g = (bigint >> 8) & 255, b = bigint & 255;
+    return [r / 255, g / 255, b / 255];
 }
 
 async function canvasToBlobUrl(canvas) {
