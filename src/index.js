@@ -118,7 +118,7 @@ export async function init(_settings) {
      * */
     async function createMedal_min(param) {
         const modelViewMatrix = mat4.create();
-        const texture = await getTextureFromType(param.texture);
+        const texture = await getTextureFromString(param.texture);
         return {
             view: modelViewMatrix,
             parts: [
@@ -143,7 +143,7 @@ export async function init(_settings) {
      * */
     async function createMedal_basic(param) {
         const modelViewMatrix = mat4.create();
-        const texture = await getTextureFromType(param.texture);
+        const texture = await getTextureFromString(param.texture);
         return {
             view: modelViewMatrix,
             parts: [
@@ -170,7 +170,7 @@ export async function init(_settings) {
     async function createMedal_basic_reflect(param) {
         const modelViewMatrix = mat4.create();
         const cubeTexture = await getCubeTexture(param.cubeTexture);// get by name
-        const texture = await getTextureFromType(param.texture);
+        const texture = await getTextureFromString(param.texture);
         return {
             view: modelViewMatrix,
             parts: [
@@ -201,7 +201,7 @@ export async function init(_settings) {
     async function createMedal_basic_reflect_normal(param) {
         const modelViewMatrix = mat4.create();
         const cubeTexture = await getCubeTexture(param.cubeTexture);// get by name
-        const texture = await getTextureFromType(param.texture);
+        const texture = await getTextureFromString(param.texture);
         const normalTexture = await getTexture(param.normalTexture);
 
         return {
@@ -381,7 +381,7 @@ async function getCubeTexture(name) {
     return texture;
 }
 
-function getTextureFromType(x) {
+function getTextureFromString(x) {
     if (/#[0-9a-fA-F]{6}/.test(x)) {
         // color
         return getSingleColorTexture(x);
