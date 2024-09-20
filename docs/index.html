@@ -93,16 +93,7 @@
     <div id="user-badges"></div>
     <p>test</p>
     <p>test</p>
-    <p>test</p>
-    <p>test</p>
-    <p>test</p>
-    <p>test</p>
-    <p>test</p>
-    <p>test</p>
-    <p>test</p>
-    <p>test</p>
-    <p>test</p>
-    <p>test</p>
+  
 
     <div id="badge-show" class="fine-medal_init">
         <canvas width="512" height="512" style="max-width: 100%;">
@@ -122,19 +113,38 @@
     </style>
     <script>
         const usage = `
-【参数用语】
-Color：hex形式
-Filename：用于请求贴图资源。不包含扩展名和一些后缀（如CubeMap的'-[np][xyz]'方位指示）。
+【参数类型】
+Color：String，hex形式RGB，如 #FFFFFF。
+Filename：String，用于请求贴图资源。不包含扩展名。
+
 【参数】
 baseColor {Color}: 底色，徽章外圈和背面。
-texture {Filename/Color}: 主要部分的贴图
-cubeTexture {Filename}: 环境贴图，一组6个，后缀为'-[np][xyz]'，如 filename-nx.jpg 。用于反射效果。
-normalTexture {Filename}: 主要部分的法线贴图。
+texture {Filename/Color}: 主要部分的贴图。可以填颜色。
+cubeTexture {Filename}: 环境贴图，六个图印在一张图上，用于反射效果。详见解释。
+normalTexture {Filename}: 主要部分的法线贴图。详见解释。
+
 【类型(type)】
-min: baseColor, texture 
-basic: baseColor, texture 
-basic_reflect: baseColor, texture, cubeTexture
-basic_reflect_normal: baseColor, texture, cubeTexture, normalTexture
+min(baseColor, texture)：最简。效果类似纸片。
+basic(baseColor, texture)：基本形状（类似美式披萨）。具有高光效果（类似塑料）。
+basic_reflect(baseColor, texture, cubeTexture)：基本形状。具有反射效果（类似金属）。
+basic_reflect_normal(baseColor, texture, cubeTexture, normalTexture)：基本形状。具有反射效果。支持法线贴图。
+
+【解释：cubeTexture】
+反射效果意思是反射环境光，需要定义 cubeMap。cubeMap用六张图定义一个环境，可以想象成正方体的六个面。
+本程序采用这样的布局：
+<span style="font-family:monospace">&nbsp;&nbsp;&nbsp;+Y<br>-X +Z +X -Z<br>&nbsp;&nbsp;&nbsp;-Y</span>
+<img style="width:auto;height:6em;" src="cubeMap.png.jpg" />（例子）
+徽章在初始状态会反射 +Z 的图。由于目前只有水平旋转动画，+Y、-Y、-Z 的图不会被用到。
+实用链接：
+<a href="https://matheowis.github.io/HDRI-to-CubeMap/" target="_blank">HDRI图转换为CubeMap</a>
+<a href="https://polyhaven.com/hdris" target="_blank">HDRI资源</a>
+
+【解释：normalTexture】
+法线贴图（Normal mapping），具体请自行百科。定义凹凸细节，借此实现凹凸面的光照效果。
+<img style="width:auto;height:6em;" src="words-normal.png.jpg" />（例子）
+对细节敏感，表达光滑面时最好用无损压缩。
+实用链接：
+<a href="https://cpetry.github.io/NormalMap-Online/" target="_blank">将高度图转换为法线贴图</a>
 `.trim();
         document.querySelector("#usage").innerHTML = usage.split('\n').join("<br>")
 
@@ -142,11 +152,9 @@ basic_reflect_normal: baseColor, texture, cubeTexture, normalTexture
             1: { texture: "test2", baseColor: '#01ee33', type: "basic", name: "测试徽章1", desc: "这是测试的<b>描述1</b>。" },
             2: { texture: "words-normal.png", baseColor: '#ee2211', type: "basic", name: "测试徽章2", desc: "这是测试的<b>描述</b>2。" },
             3: { texture: "test", baseColor: '#ee2211', type: "min", name: "测试徽章3", desc: "这是测试的<b>描述</b>3。" },
-            4: { name: "测试徽章4", desc: "这是测试的<b>描述</b>4。", type: "basic_reflect", texture: "test", cubeTexture: "room-cube", baseColor: "#fc9803" },
-            5: { name: "测试徽章5", desc: "这是测试的<b>描述</b>5。", type: "basic_reflect_normal", texture: "#fc9803", normalTexture: "words-normal.png", cubeTexture: "room-cube", baseColor: "#fc9803" },
-            6: { name: "测试徽章6", desc: "这是测试的<b>描述</b>6。", type: "basic_reflect_normal", texture: "#ffffff", normalTexture: "words-normal.png", cubeTexture: "env-cube", baseColor: "#fcb843" },
-  
-        }
+            4: { name: "测试徽章4", desc: "这是测试的<b>描述</b>4。", type: "basic_reflect", texture: "test", cubeTexture: "cubeMap.png", baseColor: "#fc9803" },
+            5: { name: "测试徽章5", desc: "这是测试的<b>描述</b>5。", type: "basic_reflect_normal", texture: "#fc9803", normalTexture: "words-normal.png", cubeTexture: "cubeMap.png", baseColor: "#fc9803" },
+    }
         window.addEventListener("load", async () => {
             const fineMedal = window.fineMedal;
             fineMedal.init({
@@ -160,7 +168,7 @@ basic_reflect_normal: baseColor, texture, cubeTexture, normalTexture
                 desc_selector: "#badge-desc"
             });
             // 创建徽章小图
-            fineMedal.getPreviews("#user-badges", [1, 2, 3, 4, 5, 6])
+            fineMedal.getPreviews("#user-badges", [1, 2, 3, 4, 5])
         });
 
     </script>
